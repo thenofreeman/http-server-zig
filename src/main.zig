@@ -1,6 +1,8 @@
 const std = @import("std");
 const builtin = @import("builtin");
 
+const stdout = std.io.getStdOut().writer();
+
 pub const Socket = struct {
     _address: std.net.Address,
     _stream: std.net.Stream,
@@ -22,5 +24,11 @@ pub const Socket = struct {
 };
 
 pub fn main() !void {
+    const socket = try Socket.init();
 
+    try stdout.print("Server Addr: {any}\n", .{socket._address});
+
+    var server = try socket._address.listen(.{});
+    const connection = try server.accept();
+    _ = connection;
 }
