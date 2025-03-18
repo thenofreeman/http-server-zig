@@ -2,32 +2,9 @@ const std = @import("std");
 const builtin = @import("builtin");
 
 const config = @import("config.zig");
-const request = @import("request.zig");
+const Request = @import("request.zig");
 
 const stdout = std.io.getStdOut().writer();
-
-pub const Method = enum {
-    GET,
-
-    pub fn init(text: []const u8) !Method {
-        return MethodMap.get(text).?;
-    }
-
-    pub fn is_supported(m: []const u8) bool {
-        const method = MethodMap.get(m);
-
-        if (method) |_| {
-            return true;
-        }
-
-        return false;
-    }
-};
-
-// Similar to a hashtable, optimized for small sets
-const MethodMap = std.static_string_map.StaticStringMap(Method).initComptime(.{
-    .{ "GET", Method.GET },
-});
 
 pub fn main() !void {
     const socket = try config.Socket.init();
@@ -42,7 +19,11 @@ pub fn main() !void {
         buffer[i] = 0;
     }
 
-    _ = try request.read_request(connection, buffer[0..buffer.len]);
+    _ = try Request.read_request(connection, buffer[0..buffer.len]);
 
-    try stdout.print("{s}\n", .{buffer});
+    const request = Request.parse_request(buffer[0..buffer.len]);
+
+    try stdout.print("{any}\n", .{request});
+
+
 }
