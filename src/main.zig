@@ -3,6 +3,9 @@ const builtin = @import("builtin");
 
 const config = @import("config.zig");
 const Request = @import("request.zig");
+const Response = @import("response.zig");
+
+const Method = Request.Method;
 
 const stdout = std.io.getStdOut().writer();
 
@@ -23,7 +26,12 @@ pub fn main() !void {
 
     const request = Request.parse_request(buffer[0..buffer.len]);
 
-    try stdout.print("{any}\n", .{request});
-
+    if (request.method == Method.GET) {
+        if (std.mem.eql(u8, request.uri, "/")) {
+            try Response.send_200(connection);
+        } else {
+            try Response.send_404(connection);
+        }
+    }
 
 }
