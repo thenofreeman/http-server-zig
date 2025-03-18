@@ -6,6 +6,29 @@ const request = @import("request.zig");
 
 const stdout = std.io.getStdOut().writer();
 
+pub const Method = enum {
+    GET,
+
+    pub fn init(text: []const u8) !Method {
+        return MethodMap.get(text).?;
+    }
+
+    pub fn is_supported(m: []const u8) bool {
+        const method = MethodMap.get(m);
+
+        if (method) |_| {
+            return true;
+        }
+
+        return false;
+    }
+};
+
+// Similar to a hashtable, optimized for small sets
+const MethodMap = std.static_string_map.StaticStringMap(Method).initComptime(.{
+    .{ "GET", Method.GET },
+});
+
 pub fn main() !void {
     const socket = try config.Socket.init();
 
